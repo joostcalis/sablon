@@ -16,6 +16,12 @@ module Sablon
       render(context, properties).string
     end
 
+    # Fetch all the expressions from the template
+    def expressions
+      document = Nokogiri::XML(content_from_docx)
+      Sablon::Parser::MailMerge.new.parse_fields(document).map(&:expression)
+    end
+
     private
     def render(context, properties = {})
       Zip::OutputStream.write_buffer(StringIO.new) do |out|
@@ -29,6 +35,16 @@ module Sablon
             out.write(process(content, context))
           else
             out.write(content)
+          end
+        end
+      end
+    end
+
+    def content_from_docx
+      Zip::InputStream.open(@path) do |io|
+        while (entry = io.get_next_entry)
+          if entry.name == 'word/document.xml'
+            return entry.get_input_stream.read
           end
         end
       end

@@ -16,6 +16,10 @@ module Sablon
       @parser = parser
     end
 
+    def context_from(xml_node)
+      fields = @parser.parse_fields(xml_node)
+    end
+
     def manipulate(xml_node, context)
       operations = build_operations(@parser.parse_fields(xml_node))
       operations.each do |step|
