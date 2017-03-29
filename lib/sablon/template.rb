@@ -17,16 +17,27 @@ module Sablon
     end
 
     private
-    def render(context, properties = {})
-      Zip::OutputStream.write_buffer(StringIO.new) do |out|
+    def render(context, images, properties)
+      Zip::OutputStream.write_buffer do |out|
+        images.each do |image|
+          if image.name =~ /^(.*)\.jpg$/
+            image.name = "#{$1}.jpeg"
+          end
+          out.put_next_entry(File.join('word', 'media', image.name))
+          out.write(image.data)
+        end
         Zip::File.open(@path).each do |entry|
           entry_name = entry.name
           out.put_next_entry(entry_name)
           content = entry.get_input_stream.read
           if entry_name == 'word/document.xml'
-            out.write(process(content, context, properties))
+            xml_node = Processor.process(Nokogiri::XML(content), context, properties)
+            Processor.remove_final_blank_page xml_node
+            out.write(xml_node.to_xml)
           elsif entry_name =~ /word\/header\d*\.xml/ || entry_name =~ /word\/footer\d*\.xml/
-            out.write(process(content, context))
+            out.write(Processor.process(Nokogiri::XML(content), context).to_xml)
+          elsif entry_name == 'word/_rels/document.xml.rels' && !images.empty?
+            out.write(Processor.process_rels(Nokogiri::XML(content), images).to_xml)
           else
             out.write(content)
           end

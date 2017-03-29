@@ -6,6 +6,7 @@ require "sablon/processor/section_properties"
 require "sablon/parser/mail_merge"
 require "sablon/operations"
 require "sablon/content"
+require "sablon/image"
 
 require 'zip'
 require 'nokogiri'
