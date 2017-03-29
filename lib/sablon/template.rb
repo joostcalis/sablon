@@ -16,6 +16,11 @@ module Sablon
       render(context, properties).string
     end
 
+    def expressions
+      document = Nokogiri::XML(content_from_docx)
+      Sablon::Parser::MailMerge.new.parse_fields(document).map(&:expression)
+    end
+
     private
     def render(context, images, properties)
       Zip::OutputStream.write_buffer do |out|
