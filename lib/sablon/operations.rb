@@ -40,9 +40,8 @@ module Sablon
         end
       end
     end
-  end
 
-  class Image < Struct.new(:image_reference, :block)
+    class Image < Struct.new(:image_reference, :block)
       def evaluate(context)
         image = image_reference.evaluate(context)
         block.replace(image)
